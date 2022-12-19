@@ -2549,3 +2549,11 @@ func (a *Association) MaxMessageSize() uint32 {
 func (a *Association) SetMaxMessageSize(maxMsgSize uint32) {
 	atomic.StoreUint32(&a.maxMessageSize, maxMsgSize)
 }
+
+func (a *Association) CWND() uint32 {
+	return a.cwnd
+}
+
+func (a *Association) RWND() uint32 {
+	return a.rwnd
+}
