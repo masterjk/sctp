@@ -2550,10 +2550,26 @@ func (a *Association) SetMaxMessageSize(maxMsgSize uint32) {
 	atomic.StoreUint32(&a.maxMessageSize, maxMsgSize)
 }
 
+func (a *Association) MaxReceiveBufferSize() uint32 {
+	return a.maxReceiveBufferSize
+}
+
 func (a *Association) CWND() uint32 {
 	return a.cwnd
 }
 
 func (a *Association) RWND() uint32 {
 	return a.rwnd
+}
+
+func (a *Association) Ssthresh() uint32 {
+	return a.ssthresh
+}
+
+func (a *Association) PartialBytesAcked() uint32 {
+	return a.partialBytesAcked
+}
+
+func (a *Association) InFastRecovery() bool {
+	return a.inFastRecovery
 }
