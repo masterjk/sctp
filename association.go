@@ -186,6 +186,10 @@ type Association struct {
 	inFastRecovery       bool
 	fastRecoverExitPoint uint32
 
+	// Statistics
+	chunkResent               uint32
+	chunkResentFastRetransmit uint32
+
 	// RTX & Ack timer
 	rtoMgr     *rtoManager
 	t1Init     *rtxTimer
@@ -331,6 +335,10 @@ func createAssociation(config Config) *Association {
 	a.t3RTX = newRTXTimer(timerT3RTX, a, noMaxRetrans)           // retransmit forever
 	a.tReconfig = newRTXTimer(timerReconfig, a, noMaxRetrans)    // retransmit forever
 	a.ackTimer = newAckTimer(a)
+
+	// Statistics
+	a.chunkResent = 0
+	a.chunkResentFastRetransmit = 0
 
 	return a
 }
@@ -751,6 +759,7 @@ func (a *Association) gatherOutboundFastRetransmissionPackets(rawPackets [][]byt
 			fastRetransSize += dataChunkSize
 			a.stats.incFastRetrans()
 			c.nSent++
+			a.chunkResentFastRetransmit++
 			a.checkPartialReliabilityStatus(c)
 			toFastRetrans = append(toFastRetrans, c)
 			a.log.Tracef("[%s] fast-retransmit: tsn=%d sent=%d htna=%d",
@@ -2243,6 +2252,7 @@ func (a *Association) getDataPacketsToRetransmit() []*packet {
 		bytesToSend += len(c.userData)
 
 		c.nSent++
+		a.chunkResent++
 
 		a.checkPartialReliabilityStatus(c)
 
@@ -2572,4 +2582,12 @@ func (a *Association) PartialBytesAcked() uint32 {
 
 func (a *Association) InFastRecovery() bool {
 	return a.inFastRecovery
+}
+
+func (a *Association) ChunkResent() uint32 {
+	return a.chunkResent
+}
+
+func (a *Association) ChunkResentFastRetransmit() uint32 {
+	return a.chunkResentFastRetransmit
 }
