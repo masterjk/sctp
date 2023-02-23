@@ -1859,12 +1859,24 @@ func (a *Association) createForwardTSN() *chunkForwardTSN {
 // createPacket wraps chunks in a packet.
 // The caller should hold the read lock.
 func (a *Association) createPacket(cs []chunk) *packet {
-	return &packet{
+	p := &packet{
 		verificationTag: a.peerVerificationTag,
 		sourcePort:      a.sourcePort,
 		destinationPort: a.destinationPort,
 		chunks:          cs,
 	}
+
+	////////////////////////////////////////////////////////////
+	// JK DEBUG
+	////////////////////////////////////////////////////////////
+	buf, _ := p.marshal()
+	fmt.Printf("SCTP Packet length: %d\n", len(buf))
+	for _, c := range p.chunks {
+		buf_chunk, _ := c.marshal()
+		fmt.Printf(" - type: %d\n", buf_chunk[0])
+	}
+
+	return p
 }
 
 // The caller should hold the lock.
