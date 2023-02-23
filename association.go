@@ -911,6 +911,8 @@ func (a *Association) gatherOutbound() ([][]byte, bool) {
 
 	ok := true
 
+	fmt.Println("*************** START BUNDLING ALL SCTP PACKETS")
+
 	switch state {
 	case established:
 		rawPackets = a.gatherDataPacketsToRetransmit(rawPackets)
@@ -926,6 +928,13 @@ func (a *Association) gatherOutbound() ([][]byte, bool) {
 	case shutdownAckSent:
 		rawPackets, ok = a.gatherOutboundShutdownPackets(rawPackets)
 	}
+
+	fmt.Println("*************** END BUNDLING ALL SCTP PACKETS")
+
+	fmt.Println()
+	fmt.Println()
+	fmt.Println()
+	fmt.Println()
 
 	return rawPackets, ok
 }
