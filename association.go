@@ -227,6 +227,10 @@ type Association struct {
 
 	name string
 	log  logging.LeveledLogger
+
+	// allow access to RTT and SRTT for sampling
+	rtt  float64
+	srtt float64
 }
 
 // Config collects the arguments to createAssociation construction into
@@ -1460,6 +1464,8 @@ func (a *Association) processSelectiveAck(d *chunkSelectiveAck) (map[uint16]int,
 				a.minTSN2MeasureRTT = a.myNextTSN
 				rtt := time.Since(c.since).Seconds() * 1000.0
 				srtt := a.rtoMgr.setNewRTT(rtt)
+				a.rtt = rtt
+				a.srtt = srtt
 				a.log.Tracef("[%s] SACK: measured-rtt=%f srtt=%f new-rto=%f",
 					a.name, rtt, srtt, a.rtoMgr.getRTO())
 			}
@@ -1498,6 +1504,8 @@ func (a *Association) processSelectiveAck(d *chunkSelectiveAck) (map[uint16]int,
 					a.minTSN2MeasureRTT = a.myNextTSN
 					rtt := time.Since(c.since).Seconds() * 1000.0
 					srtt := a.rtoMgr.setNewRTT(rtt)
+					a.rtt = rtt
+					a.srtt = srtt
 					a.log.Tracef("[%s] SACK: measured-rtt=%f srtt=%f new-rto=%f",
 						a.name, rtt, srtt, a.rtoMgr.getRTO())
 				}
@@ -2590,4 +2598,16 @@ func (a *Association) ChunkResent() uint32 {
 
 func (a *Association) ChunkResentFastRetransmit() uint32 {
 	return a.chunkResentFastRetransmit
+}
+
+func (a *Association) RTT() float64 {
+	return a.rtt
+}
+
+func (a *Association) SRTT() float64 {
+	return a.srtt
+}
+
+func (a *Association) RTO() float64 {
+	return a.rtoMgr.rto
 }
