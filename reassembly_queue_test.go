@@ -22,6 +22,7 @@ func TestReassemblyQueue(t *testing.T) {
 			tsn:                  1,
 			streamSequenceNumber: 0,
 			userData:             []byte("ABC"),
+			len_userData:         3,
 		}
 
 		complete = rq.push(chunk)
@@ -34,6 +35,7 @@ func TestReassemblyQueue(t *testing.T) {
 			tsn:                  2,
 			streamSequenceNumber: 0,
 			userData:             []byte("DEFG"),
+			len_userData:         4,
 		}
 
 		complete = rq.push(chunk)
@@ -65,6 +67,7 @@ func TestReassemblyQueue(t *testing.T) {
 			tsn:                  1,
 			streamSequenceNumber: 0,
 			userData:             []byte("ABC"),
+			len_userData:         3,
 		}
 
 		complete = rq.push(chunk)
@@ -77,6 +80,7 @@ func TestReassemblyQueue(t *testing.T) {
 			tsn:                  2,
 			streamSequenceNumber: 0,
 			userData:             []byte("DEFG"),
+			len_userData:         4,
 		}
 
 		complete = rq.push(chunk)
@@ -90,6 +94,7 @@ func TestReassemblyQueue(t *testing.T) {
 			tsn:                  3,
 			streamSequenceNumber: 0,
 			userData:             []byte("H"),
+			len_userData:         1,
 		}
 
 		complete = rq.push(chunk)
@@ -121,6 +126,7 @@ func TestReassemblyQueue(t *testing.T) {
 			tsn:                  1,
 			streamSequenceNumber: 0,
 			userData:             []byte("ABC"),
+			len_userData:         3,
 		}
 
 		complete = rq.push(chunk)
@@ -135,6 +141,7 @@ func TestReassemblyQueue(t *testing.T) {
 			tsn:                  2,
 			streamSequenceNumber: 1,
 			userData:             []byte("DEF"),
+			len_userData:         3,
 		}
 
 		complete = rq.push(chunk)
@@ -179,6 +186,7 @@ func TestReassemblyQueue(t *testing.T) {
 			tsn:                  10,
 			streamSequenceNumber: 0,
 			userData:             []byte("IN"),
+			len_userData:         2,
 		}
 
 		complete = rq.push(chunk)
@@ -192,6 +200,7 @@ func TestReassemblyQueue(t *testing.T) {
 			tsn:                  12, // <- incongiguous
 			streamSequenceNumber: 1,
 			userData:             []byte("COMPLETE"),
+			len_userData:         len("COMPLETE"),
 		}
 
 		complete = rq.push(chunk)
@@ -206,6 +215,7 @@ func TestReassemblyQueue(t *testing.T) {
 			tsn:                  13,
 			streamSequenceNumber: 1,
 			userData:             []byte("GOOD"),
+			len_userData:         len("GOOD"),
 		}
 
 		complete = rq.push(chunk)
@@ -243,6 +253,7 @@ func TestReassemblyQueue(t *testing.T) {
 			tsn:                  10,
 			streamSequenceNumber: 0,
 			userData:             []byte("IN"),
+			len_userData:         2,
 		}
 
 		complete = rq.push(chunk)
@@ -266,6 +277,7 @@ func TestReassemblyQueue(t *testing.T) {
 			tsn:                  10,
 			streamSequenceNumber: 6, // <-- stale
 			userData:             []byte("IN"),
+			len_userData:         2,
 		}
 
 		complete = rq.push(chunk)
@@ -287,6 +299,7 @@ func TestReassemblyQueue(t *testing.T) {
 			tsn:                  123,
 			streamSequenceNumber: 0,
 			userData:             []byte("IN"),
+			len_userData:         2,
 		}
 
 		complete = rq.push(chunk)
@@ -314,6 +327,7 @@ func TestReassemblyQueue(t *testing.T) {
 			tsn:                  123,
 			streamSequenceNumber: 1,
 			userData:             []byte("IN"),
+			len_userData:         2,
 		}
 
 		complete = rq.push(chunk)
@@ -341,6 +355,7 @@ func TestReassemblyQueue(t *testing.T) {
 			tsn:                  123,
 			streamSequenceNumber: 0,
 			userData:             []byte("0123456789"),
+			len_userData:         len("0123456789"),
 		}
 
 		complete = rq.push(chunk)
@@ -370,6 +385,7 @@ func TestReassemblyQueue(t *testing.T) {
 			tsn:                  10,
 			streamSequenceNumber: ssnComplete,
 			userData:             []byte("123"),
+			len_userData:         3,
 		}
 
 		complete = rq.push(chunk)
@@ -382,6 +398,7 @@ func TestReassemblyQueue(t *testing.T) {
 			tsn:                  11,
 			streamSequenceNumber: ssnDropped,
 			userData:             []byte("ABC"),
+			len_userData:         3,
 		}
 
 		complete = rq.push(chunk)
@@ -393,6 +410,7 @@ func TestReassemblyQueue(t *testing.T) {
 			tsn:                  12,
 			streamSequenceNumber: ssnDropped,
 			userData:             []byte("DEF"),
+			len_userData:         3,
 		}
 
 		complete = rq.push(chunk)
@@ -422,6 +440,7 @@ func TestReassemblyQueue(t *testing.T) {
 			tsn:                  11,
 			streamSequenceNumber: ssnDropped,
 			userData:             []byte("ABC"),
+			len_userData:         3,
 		}
 
 		complete = rq.push(chunk)
@@ -434,6 +453,7 @@ func TestReassemblyQueue(t *testing.T) {
 			tsn:                  12,
 			streamSequenceNumber: ssnDropped,
 			userData:             []byte("DEF"),
+			len_userData:         3,
 		}
 
 		complete = rq.push(chunk)
@@ -447,6 +467,7 @@ func TestReassemblyQueue(t *testing.T) {
 			beginningFragment:    true,
 			streamSequenceNumber: ssnKept,
 			userData:             []byte("SOS"),
+			len_userData:         3,
 		}
 
 		complete = rq.push(chunk)

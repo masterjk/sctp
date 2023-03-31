@@ -67,7 +67,7 @@ func (q *pendingQueue) push(c *chunkPayloadData) {
 	} else {
 		q.orderedQueue.push(c)
 	}
-	q.nBytes += len(c.userData)
+	q.nBytes += c.len_userData
 }
 
 func (q *pendingQueue) peek() *chunkPayloadData {
@@ -125,7 +125,7 @@ func (q *pendingQueue) pop(c *chunkPayloadData) error {
 			}
 		}
 	}
-	q.nBytes -= len(c.userData)
+	q.nBytes -= c.len_userData
 	return nil
 }
 

@@ -10,8 +10,9 @@ import (
 /*
 chunkPayloadData represents an SCTP Chunk of type DATA
 
- 0                   1                   2                   3
- 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+	0                   1                   2                   3
+	0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |   Type = 0    | Reserved|U|B|E|    Length                     |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -26,11 +27,12 @@ chunkPayloadData represents an SCTP Chunk of type DATA
 |                                                               |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 
-
 An unfragmented user message shall have both the B and E bits set to
 '1'.  Setting both B and E bits to '0' indicates a middle fragment of
 a multi-fragment user message, as summarized in the following table:
-   B E                  Description
+
+	B E                  Description
+
 ============================================================
 |  1 0 | First piece of a fragmented user message          |
 +----------------------------------------------------------+
@@ -56,16 +58,19 @@ type chunkPayloadData struct {
 	streamSequenceNumber uint16
 	payloadType          PayloadProtocolIdentifier
 	userData             []byte
+	len_userData         int
 
 	// Whether this data chunk was acknowledged (received by peer)
 	acked         bool
 	missIndicator uint32
 
 	// Partial-reliability parameters used only by sender
-	since        time.Time
-	nSent        uint32 // number of transmission made for this chunk
-	_abandoned   bool
-	_allInflight bool // valid only with the first fragment
+	since                 time.Time
+	nSent                 uint32 // number of transmission made for this chunk
+	_abandoned            bool
+	_allInflight          bool // valid only with the first fragment
+	freeUserDataOnMarshal bool
+	marshalCount          int
 
 	// Retransmission flag set when T1-RTX timeout occurred and this
 	// chunk is still in the inflight queue
@@ -134,18 +139,25 @@ func (p *chunkPayloadData) unmarshal(raw []byte) error {
 	p.streamSequenceNumber = binary.BigEndian.Uint16(p.raw[6:])
 	p.payloadType = PayloadProtocolIdentifier(binary.BigEndian.Uint32(p.raw[8:]))
 	p.userData = p.raw[payloadDataHeaderSize:]
+	p.len_userData = len(p.userData)
 
 	return nil
 }
 
 func (p *chunkPayloadData) marshal() ([]byte, error) {
-	payRaw := make([]byte, payloadDataHeaderSize+len(p.userData))
+	payRaw := make([]byte, payloadDataHeaderSize+p.len_userData)
 
 	binary.BigEndian.PutUint32(payRaw[0:], p.tsn)
 	binary.BigEndian.PutUint16(payRaw[4:], p.streamIdentifier)
 	binary.BigEndian.PutUint16(payRaw[6:], p.streamSequenceNumber)
 	binary.BigEndian.PutUint32(payRaw[8:], uint32(p.payloadType))
 	copy(payRaw[payloadDataHeaderSize:], p.userData)
+
+	p.marshalCount++
+	if p.freeUserDataOnMarshal {
+		fmt.Println("chunkPayloadData marshalCount", p.marshalCount)
+		p.userData = nil
+	}
 
 	flags := uint8(0)
 	if p.endingFragment {

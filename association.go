@@ -124,12 +124,13 @@ func getAssociationStateString(a uint32) string {
 //
 // Tag         :
 // State       : A state variable indicating what state the association
-//             : is in, i.e., COOKIE-WAIT, COOKIE-ECHOED, ESTABLISHED,
-//             : SHUTDOWN-PENDING, SHUTDOWN-SENT, SHUTDOWN-RECEIVED,
-//             : SHUTDOWN-ACK-SENT.
 //
-//               Note: No "CLOSED" state is illustrated since if a
-//               association is "CLOSED" its TCB SHOULD be removed.
+//	: is in, i.e., COOKIE-WAIT, COOKIE-ECHOED, ESTABLISHED,
+//	: SHUTDOWN-PENDING, SHUTDOWN-SENT, SHUTDOWN-RECEIVED,
+//	: SHUTDOWN-ACK-SENT.
+//
+//	  Note: No "CLOSED" state is illustrated since if a
+//	  association is "CLOSED" its TCB SHOULD be removed.
 type Association struct {
 	bytesReceived uint64
 	bytesSent     uint64
@@ -755,7 +756,7 @@ func (a *Association) gatherOutboundFastRetransmissionPackets(rawPackets [][]byt
 			//      of cwnd and SHOULD NOT delay retransmission for this single
 			//		packet.
 
-			dataChunkSize := dataChunkHeaderSize + uint32(len(c.userData))
+			dataChunkSize := dataChunkHeaderSize + uint32(c.len_userData)
 			if a.mtu < fastRetransSize+dataChunkSize {
 				break
 			}
@@ -1266,7 +1267,7 @@ func (a *Association) handleCookieAck() {
 // The caller should hold the lock.
 func (a *Association) handleData(d *chunkPayloadData) []*packet {
 	a.log.Tracef("[%s] DATA: tsn=%d immediateSack=%v len=%d",
-		a.name, d.tsn, d.immediateSack, len(d.userData))
+		a.name, d.tsn, d.immediateSack, d.len_userData)
 	a.stats.incDATAs()
 
 	canPush := a.payloadQueue.canPush(d, a.peerLastTSN)
@@ -1442,7 +1443,7 @@ func (a *Association) processSelectiveAck(d *chunkSelectiveAck) (map[uint16]int,
 				a.t3RTX.stop()
 			}
 
-			nBytesAcked := len(c.userData)
+			nBytesAcked := c.len_userData
 
 			// Sum the number of bytes acknowledged per stream
 			if amount, ok := bytesAckedPerStream[c.streamIdentifier]; ok {
@@ -2075,7 +2076,7 @@ func (a *Association) movePendingDataChunkToInflightQueue(c *chunkPayloadData) {
 	a.checkPartialReliabilityStatus(c)
 
 	a.log.Tracef("[%s] sending ppi=%d tsn=%d ssn=%d sent=%d len=%d (%v,%v)",
-		a.name, c.payloadType, c.tsn, c.streamSequenceNumber, c.nSent, len(c.userData), c.beginningFragment, c.endingFragment)
+		a.name, c.payloadType, c.tsn, c.streamSequenceNumber, c.nSent, c.len_userData, c.beginningFragment, c.endingFragment)
 
 	a.inflightQueue.pushNoCheck(c)
 }
@@ -2102,7 +2103,7 @@ func (a *Association) popPendingDataChunksToSend() ([]*chunkPayloadData, []uint1
 				break // no more pending data
 			}
 
-			dataLen := uint32(len(c.userData))
+			dataLen := uint32(c.len_userData)
 			if dataLen == 0 {
 				sisToReset = append(sisToReset, c.streamIdentifier)
 				err := a.pendingQueue.pop(c)
@@ -2155,14 +2156,14 @@ func (a *Association) bundleDataChunksIntoPackets(chunks []*chunkPayloadData) []
 		//   single packet.  Furthermore, DATA chunks being retransmitted MAY be
 		//   bundled with new DATA chunks, as long as the resulting packet size
 		//   does not exceed the path MTU.
-		if bytesInPacket+len(c.userData) > int(a.mtu) {
+		if bytesInPacket+c.len_userData > int(a.mtu) {
 			packets = append(packets, a.createPacket(chunksToSend))
 			chunksToSend = []chunk{}
 			bytesInPacket = int(commonHeaderSize)
 		}
 
 		chunksToSend = append(chunksToSend, c)
-		bytesInPacket += int(dataChunkHeaderSize) + len(c.userData)
+		bytesInPacket += int(dataChunkHeaderSize) + c.len_userData
 	}
 
 	if len(chunksToSend) > 0 {
@@ -2247,17 +2248,17 @@ func (a *Association) getDataPacketsToRetransmit() []*packet {
 			continue
 		}
 
-		if i == 0 && int(a.rwnd) < len(c.userData) {
+		if i == 0 && int(a.rwnd) < c.len_userData {
 			// Send it as a zero window probe
 			done = true
-		} else if bytesToSend+len(c.userData) > int(awnd) {
+		} else if bytesToSend+c.len_userData > int(awnd) {
 			break
 		}
 
 		// reset the retransmit flag not to retransmit again before the next
 		// t3-rtx timer fires
 		c.retransmit = false
-		bytesToSend += len(c.userData)
+		bytesToSend += c.len_userData
 
 		c.nSent++
 		a.chunkResent++

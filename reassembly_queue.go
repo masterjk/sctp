@@ -131,7 +131,7 @@ func (r *reassemblyQueue) push(chunk *chunkPayloadData) bool {
 	if chunk.unordered {
 		// First, insert into unorderedChunks array
 		r.unorderedChunks = append(r.unorderedChunks, chunk)
-		atomic.AddUint64(&r.nBytes, uint64(len(chunk.userData)))
+		atomic.AddUint64(&r.nBytes, uint64(chunk.len_userData))
 		sortChunksByTSN(r.unorderedChunks)
 
 		// Scan unorderedChunks that are contiguous (in TSN)
@@ -169,7 +169,7 @@ func (r *reassemblyQueue) push(chunk *chunkPayloadData) bool {
 		}
 	}
 
-	atomic.AddUint64(&r.nBytes, uint64(len(chunk.userData)))
+	atomic.AddUint64(&r.nBytes, uint64(chunk.len_userData))
 
 	return cset.push(chunk)
 }
@@ -279,7 +279,7 @@ func (r *reassemblyQueue) read(buf []byte) (int, PayloadProtocolIdentifier, erro
 	ppi := cset.ppi
 	var err error
 	for _, c := range cset.chunks {
-		toCopy := len(c.userData)
+		toCopy := c.len_userData
 		r.subtractNumBytes(toCopy)
 		if err == nil {
 			n := copy(buf[nWritten:], c.userData)
@@ -302,7 +302,7 @@ func (r *reassemblyQueue) forwardTSNForOrdered(lastSSN uint16) {
 			if !set.isComplete() {
 				// drop the set
 				for _, c := range set.chunks {
-					r.subtractNumBytes(len(c.userData))
+					r.subtractNumBytes(c.len_userData)
 				}
 				continue
 			}
@@ -332,7 +332,7 @@ func (r *reassemblyQueue) forwardTSNForUnordered(newCumulativeTSN uint32) {
 	}
 	if lastIdx >= 0 {
 		for _, c := range r.unorderedChunks[0 : lastIdx+1] {
-			r.subtractNumBytes(len(c.userData))
+			r.subtractNumBytes(c.len_userData)
 		}
 		r.unorderedChunks = r.unorderedChunks[lastIdx+1:]
 	}

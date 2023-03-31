@@ -1138,6 +1138,7 @@ func TestCreateForwardTSN(t *testing.T) {
 			streamIdentifier:     1,
 			streamSequenceNumber: 2,
 			userData:             []byte("ABC"),
+			len_userData:         3,
 			nSent:                1,
 			_abandoned:           true,
 		})
@@ -1165,6 +1166,7 @@ func TestCreateForwardTSN(t *testing.T) {
 			streamIdentifier:     1,
 			streamSequenceNumber: 2,
 			userData:             []byte("ABC"),
+			len_userData:         3,
 			nSent:                1,
 			_abandoned:           true,
 		})
@@ -1175,6 +1177,7 @@ func TestCreateForwardTSN(t *testing.T) {
 			streamIdentifier:     1,
 			streamSequenceNumber: 3,
 			userData:             []byte("DEF"),
+			len_userData:         3,
 			nSent:                1,
 			_abandoned:           true,
 		})
@@ -1185,6 +1188,7 @@ func TestCreateForwardTSN(t *testing.T) {
 			streamIdentifier:     2,
 			streamSequenceNumber: 1,
 			userData:             []byte("123"),
+			len_userData:         3,
 			nSent:                1,
 			_abandoned:           true,
 		})
@@ -1257,6 +1261,7 @@ func TestHandleForwardTSN(t *testing.T) {
 			streamIdentifier:     0,
 			streamSequenceNumber: 1,
 			userData:             []byte("ABC"),
+			len_userData:         3,
 		}, a.peerLastTSN)
 
 		fwdtsn := &chunkForwardTSN{
@@ -1294,6 +1299,7 @@ func TestHandleForwardTSN(t *testing.T) {
 			streamIdentifier:     0,
 			streamSequenceNumber: 1,
 			userData:             []byte("ABC"),
+			len_userData:         3,
 		}, a.peerLastTSN)
 
 		fwdtsn := &chunkForwardTSN{
@@ -1632,6 +1638,7 @@ func TestAssocCreateNewStream(t *testing.T) {
 			tsn:               a.peerLastTSN + 1,
 			streamIdentifier:  newSI,
 			userData:          []byte("ABC"),
+			len_userData:      3,
 		}
 
 		p := a.handleData(toBeIgnored)

@@ -7,7 +7,7 @@ import (
 )
 
 func makePayload(tsn uint32, nBytes int) *chunkPayloadData {
-	return &chunkPayloadData{tsn: tsn, userData: make([]byte, nBytes)}
+	return &chunkPayloadData{tsn: tsn, userData: make([]byte, nBytes), len_userData: nBytes}
 }
 
 func TestPayloadQueue(t *testing.T) {

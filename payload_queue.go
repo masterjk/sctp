@@ -43,7 +43,7 @@ func (q *payloadQueue) canPush(p *chunkPayloadData, cumulativeTSN uint32) bool {
 
 func (q *payloadQueue) pushNoCheck(p *chunkPayloadData) {
 	q.chunkMap[p.tsn] = p
-	q.nBytes += len(p.userData)
+	q.nBytes += p.len_userData
 	q.sorted = nil
 }
 
@@ -59,7 +59,7 @@ func (q *payloadQueue) push(p *chunkPayloadData, cumulativeTSN uint32) bool {
 	}
 
 	q.chunkMap[p.tsn] = p
-	q.nBytes += len(p.userData)
+	q.nBytes += p.len_userData
 	q.sorted = nil
 	return true
 }
@@ -72,7 +72,7 @@ func (q *payloadQueue) pop(tsn uint32) (*chunkPayloadData, bool) {
 		q.sorted = q.sorted[1:]
 		if c, ok := q.chunkMap[tsn]; ok {
 			delete(q.chunkMap, tsn)
-			q.nBytes -= len(c.userData)
+			q.nBytes -= c.len_userData
 			return c, true
 		}
 	}
@@ -143,9 +143,10 @@ func (q *payloadQueue) markAsAcked(tsn uint32) int {
 	if c, ok := q.chunkMap[tsn]; ok {
 		c.acked = true
 		c.retransmit = false
-		nBytesAcked = len(c.userData)
+		nBytesAcked = c.len_userData
 		q.nBytes -= nBytesAcked
 		c.userData = []byte{}
+		c.len_userData = 0
 	}
 
 	return nBytesAcked

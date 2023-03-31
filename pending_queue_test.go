@@ -30,6 +30,7 @@ func makeDataChunk(tsn uint32, unordered bool, frag int) *chunkPayloadData {
 		beginningFragment: b,
 		endingFragment:    e,
 		userData:          make([]byte, 10), // always 10 bytes
+		len_userData:      10,
 	}
 }
 

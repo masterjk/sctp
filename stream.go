@@ -243,15 +243,17 @@ func (s *Stream) packetize(raw []byte, ppi PayloadProtocolIdentifier) []*chunkPa
 		copy(userData, raw[i:i+fragmentSize])
 
 		chunk := &chunkPayloadData{
-			streamIdentifier:     s.streamIdentifier,
-			userData:             userData,
-			unordered:            unordered,
-			beginningFragment:    i == 0,
-			endingFragment:       remaining-fragmentSize == 0,
-			immediateSack:        false,
-			payloadType:          ppi,
-			streamSequenceNumber: s.sequenceNumber,
-			head:                 head,
+			streamIdentifier:      s.streamIdentifier,
+			userData:              userData,
+			len_userData:          len(userData),
+			unordered:             unordered,
+			beginningFragment:     i == 0,
+			endingFragment:        remaining-fragmentSize == 0,
+			immediateSack:         false,
+			payloadType:           ppi,
+			streamSequenceNumber:  s.sequenceNumber,
+			head:                  head,
+			freeUserDataOnMarshal: s.reliabilityType == ReliabilityTypeRexmit && s.reliabilityValue == 0,
 		}
 
 		if head == nil {
